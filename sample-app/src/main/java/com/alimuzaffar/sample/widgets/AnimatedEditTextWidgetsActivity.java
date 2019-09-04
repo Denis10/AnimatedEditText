@@ -11,6 +11,7 @@ import com.alimuzaffar.lib.widgets.TextDrawable;
 
 public class AnimatedEditTextWidgetsActivity extends AppCompatActivity {
     private AnimatedEditText mTxtPopIn;
+    private AnimatedEditText mTxtFadeIn;
     private AnimatedEditText mTxtBottomUp;
     private AnimatedEditText mTxtRightIn;
     private AnimatedEditText mTxtMiddleUp;
@@ -20,6 +21,7 @@ public class AnimatedEditTextWidgetsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_text);
         mTxtPopIn = (AnimatedEditText) findViewById(R.id.txt_pop_in);
+        mTxtFadeIn = (AnimatedEditText) findViewById(R.id.txt_fade_in);
         mTxtBottomUp = (AnimatedEditText) findViewById(R.id.txt_bottom_up);
         mTxtRightIn = (AnimatedEditText) findViewById(R.id.txt_right_in);
         mTxtMiddleUp = (AnimatedEditText) findViewById(R.id.txt_middle_up);
@@ -33,6 +35,7 @@ public class AnimatedEditTextWidgetsActivity extends AppCompatActivity {
 
     public void onClick_clear(View view) {
         toggle(mTxtPopIn);
+        toggle(mTxtFadeIn);
         toggle(mTxtBottomUp);
         toggle(mTxtRightIn);
         toggle(mTxtMiddleUp);

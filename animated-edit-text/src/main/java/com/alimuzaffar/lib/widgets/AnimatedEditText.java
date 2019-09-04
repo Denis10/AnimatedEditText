@@ -36,13 +36,13 @@ import android.view.Gravity;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Locale;
-
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.core.text.TextUtilsCompat;
 import androidx.core.view.ViewCompat;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Locale;
 
 /**
  * An EditText field that can animate the typed text.
@@ -84,7 +84,7 @@ public class AnimatedEditText extends AppCompatEditText {
 
 
     public enum AnimationType {
-        RIGHT_TO_LEFT, BOTTOM_UP, MIDDLE_UP, POP_IN, NONE
+        RIGHT_TO_LEFT, BOTTOM_UP, MIDDLE_UP, POP_IN, FADE_IN, NONE
     }
 
     public AnimatedEditText(Context context) {
@@ -115,6 +115,8 @@ public class AnimatedEditText extends AppCompatEditText {
                 setAnimationType(mAnimationType = AnimationType.MIDDLE_UP);
             } else if (outValue.data == 3) {
                 setAnimationType(mAnimationType = AnimationType.POP_IN);
+            } else if (outValue.data == 4) {
+                setAnimationType(mAnimationType = AnimationType.FADE_IN);
             } else if (outValue.data == -1) {
                 setAnimationType(mAnimationType = AnimationType.NONE);
             }
@@ -383,6 +385,9 @@ public class AnimatedEditText extends AppCompatEditText {
                 case POP_IN:
                     animatePopIn(true, endListener);
                     break;
+                case FADE_IN:
+                    animateFadeIn(true, endListener);
+                    break;
                 case BOTTOM_UP:
                     animateInFromBottom(true, endListener);
                     break;
@@ -457,6 +462,9 @@ public class AnimatedEditText extends AppCompatEditText {
                     break;
                 case POP_IN:
                     animatePopIn();
+                    break;
+                case FADE_IN:
+                    animateFadeIn();
                     break;
                 case BOTTOM_UP:
                     animateInFromBottom();
@@ -638,6 +646,71 @@ public class AnimatedEditText extends AppCompatEditText {
         mAnimSet.playTogether(mAnimationsToPlay);
         mAnimSet.setDuration(200);
         mAnimSet.start();
+    }
+
+    private void animateFadeIn() {
+        animateFadeIn(false, null);
+    }
+
+    private void animateFadeIn(final boolean reverse, AnimationEndListener listener) {
+        int start = reverse ? 1 : 0;
+        int end = reverse ? 0 : 1;
+        ValueAnimator va = ValueAnimator.ofInt(start, end);
+        va.setInterpolator(new DecelerateInterpolator());
+        va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                int currentValue = (Integer) animation.getAnimatedValue();
+                if (currentValue < 1) {
+                    mAnimPaint.setAlpha(0);
+                } else {
+                    mAnimPaint.setAlpha(255);
+                }
+                AnimatedEditText.this.invalidate();
+            }
+        });
+        mAnimSet = new AnimatorSet();
+        if (listener != null) {
+            mAnimSet.addListener(listener);
+        }
+        mAnimationsToPlay.clear();
+        mAnimationsToPlay.add(va);
+        if (mShouldAnimateCursor) {
+            ValueAnimator animCursor = animateMoveCursorToEnd(reverse);
+            mAnimationsToPlay.add(animCursor);
+        }
+        mAnimSet.playTogether(mAnimationsToPlay);
+        mAnimSet.setDuration(200);
+        mAnimSet.start();
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private ValueAnimator animateMoveCursorToEnd(boolean reverse) {
+        float start = reverse ? getPaint().measureText(getAnimText()) : 0;
+        float end = reverse ? 0 : getPaint().measureText(getAnimText());
+        ValueAnimator va = ValueAnimator.ofFloat(start, end);
+
+        va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mCursorX = (Float) animation.getAnimatedValue();
+            }
+        });
+        if (isCursorVisible()) {
+            va.addListener(new AnimationEndListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    setCursorVisible(false);
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    setCursorVisible(true);
+                    setSelection(getText().length());
+                }
+            });
+        }
+        return va;
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)

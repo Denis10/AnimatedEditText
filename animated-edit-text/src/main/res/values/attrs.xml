@@ -6,6 +6,7 @@
             <enum name="fromRight" value="1" />
             <enum name="fromMiddle" value="2" />
             <enum name="popIn" value="3" />
+            <enum name="fadeIn" value="4" />
             <enum name="none" value="-1" />
         </attr>
         <attr name="textMask" format="string" />
